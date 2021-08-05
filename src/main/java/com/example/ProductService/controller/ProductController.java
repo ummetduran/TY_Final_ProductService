@@ -1,5 +1,6 @@
 package com.example.ProductService.controller;
 
+import com.example.ProductService.models.dto.ProductDTO;
 import com.example.ProductService.models.entity.Product;
 import com.example.ProductService.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +28,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> getAllProduct(){
         return  ResponseEntity.ok(productService.getAllProduct());
+    }
+
+    @PutMapping
+    public ResponseEntity<String> updatePrice(@RequestBody ProductDTO productDTO){
+        return new ResponseEntity(productService.update(productDTO), HttpStatus.OK);
     }
 }
