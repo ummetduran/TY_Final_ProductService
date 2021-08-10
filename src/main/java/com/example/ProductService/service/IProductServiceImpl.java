@@ -52,7 +52,8 @@ public class IProductServiceImpl implements IProductService{
     @Transactional
     @Override
     public Product update(ProductDTO productDTO) {
-        Product product = productRepository.getById(productDTO.getId());
+        Product product = productRepository.getById(productDTO.getProductId());
+        productDTO.setProductId(product.getProductId());
         productDTO.setOldPrice(product.getPrice());
         product.setPrice(productDTO.getNewPrice());
 
