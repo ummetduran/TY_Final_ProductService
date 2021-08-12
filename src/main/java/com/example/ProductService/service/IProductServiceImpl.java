@@ -1,19 +1,19 @@
 package com.example.ProductService.service;
 
-import com.example.ProductService.amqp.Message;
+import com.example.ProductService.amqp.ProductPriceChangeMessage;
 import com.example.ProductService.amqp.config.Producer;
+import com.example.ProductService.exception.ProductNotFound;
 import com.example.ProductService.models.dto.ProductDTO;
 import com.example.ProductService.models.entity.Product;
 import com.example.ProductService.repository.ProductRepository;
-import java.util.UUID;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-
-import static com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat.UUID;
 
 @Service
 public class IProductServiceImpl implements IProductService{
@@ -43,10 +43,41 @@ public class IProductServiceImpl implements IProductService{
 
         return productRepository.getById(id);
     }
+    @Override
+    public void increaseById(Long productId, int quantityInBasket) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if(productOptional.isPresent()) {
+            Product product = productOptional.get();
+            System.out.println(product);
+
+            int count = product.getQuantity();
+            count+=quantityInBasket;
+            product.setQuantity(count);
+            productRepository.save(product);
+        }else{
+            throw new ProductNotFound(productId);
+        }
+    }
 
     @Override
-    public void deleteProduct(Long productId) {
-        productRepository.deleteById(productId);
+    public void reduceById(Long productId, int quantityInBasket) {
+
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if(productOptional.isPresent()) {
+            Product product = productOptional.get();
+            System.out.println(product);
+
+            int count = product.getQuantity();
+            count-=quantityInBasket;
+            product.setQuantity(count);
+            productRepository.save(product);
+            if(count<3){
+
+            }
+        }else{
+            throw new ProductNotFound(productId);
+        }
+
     }
 
     @Transactional
@@ -57,9 +88,11 @@ public class IProductServiceImpl implements IProductService{
         productDTO.setOldPrice(product.getPrice());
         product.setPrice(productDTO.getNewPrice());
 
-        Message message = Message.builder().id(java.util.UUID.randomUUID().toString()).message(productDTO).build();
-        producer.sendToQueue(message);
-        System.out.println(message.toString());
+        ProductPriceChangeMessage productPriceChangeMessage = ProductPriceChangeMessage.builder().id(java.util.UUID.randomUUID().toString()).message(productDTO).build();
+        producer.sendToQueue(productPriceChangeMessage);
+        System.out.println(productPriceChangeMessage.toString());
         return productRepository.save(product);
     }
+
+
 }

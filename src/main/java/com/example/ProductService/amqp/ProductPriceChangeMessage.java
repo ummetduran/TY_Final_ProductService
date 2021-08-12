@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 @Builder
-public class Message implements Serializable {
+public class ProductPriceChangeMessage implements Serializable {
     private String id;
     ProductDTO message;
 

@@ -9,6 +9,8 @@ public interface IProductService {
     Product addProduct(Product product);
     public List<Product> getAllProduct();
     public Product getProductById(Long id);
-    public void deleteProduct(Long productId);
+    public void reduceById(Long productId, int quantityInBasket);
     public Product update(ProductDTO productDTO);
+
+    void increaseById(Long productId, int quantityInBasket);
 }
