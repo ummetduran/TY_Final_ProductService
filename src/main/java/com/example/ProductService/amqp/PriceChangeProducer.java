@@ -1,13 +1,13 @@
-package com.example.ProductService.amqp.config;
+package com.example.ProductService.amqp;
 
-import com.example.ProductService.amqp.Message;
+import com.example.ProductService.models.ProductPriceChangeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 @Service
-public class Producer {
+public class PriceChangeProducer {
     @Value("${ps.rabbit.routing.name}")
     private String routingName;
 
@@ -18,9 +18,9 @@ public class Producer {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public void sendToQueue(Message message) {
+    public void sendToQueue(ProductPriceChangeMessage productPriceChangeMessage) {
 
-        System.out.println("Notification Sent ID : " + message);
-        rabbitTemplate.convertAndSend(exchangeName, routingName, message);
+        System.out.println("Notification Sent ID : " + productPriceChangeMessage);
+        rabbitTemplate.convertAndSend(exchangeName, routingName, productPriceChangeMessage);
     }
 }

@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 @Builder
 public class ProductDTO {
-    private Long id;
+    private Long productId;
+    private String productName;
     private Double oldPrice;
     private Double newPrice;
 

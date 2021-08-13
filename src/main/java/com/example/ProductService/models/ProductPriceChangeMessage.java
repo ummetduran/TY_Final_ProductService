@@ -1,4 +1,4 @@
-package com.example.ProductService.amqp;
+package com.example.ProductService.models;
 
 import com.example.ProductService.models.dto.ProductDTO;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 @Builder
-public class Message implements Serializable {
+public class ProductPriceChangeMessage implements Serializable {
     private String id;
     ProductDTO message;
 
