@@ -1,7 +1,8 @@
 package com.example.ProductService.service;
 
-import com.example.ProductService.amqp.ProductPriceChangeMessage;
-import com.example.ProductService.amqp.config.Producer;
+import com.example.ProductService.amqp.StockProducer;
+import com.example.ProductService.models.ProductPriceChangeMessage;
+import com.example.ProductService.amqp.PriceChangeProducer;
 import com.example.ProductService.exception.ProductNotFound;
 import com.example.ProductService.models.dto.ProductDTO;
 import com.example.ProductService.models.entity.Product;
@@ -20,15 +21,28 @@ public class IProductServiceImpl implements IProductService{
 
     private final ProductRepository productRepository;
 
+
     @Autowired
-    private Producer producer;
+    private PriceChangeProducer priceChangeProducer;
+    @Autowired
+    private StockProducer stockProducer;
     public IProductServiceImpl(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
     @Override
     public Product addProduct(Product product) {
-        return productRepository.save(product);
+        Optional<Product> productOpt = productRepository.findById(product.getProductId());
+        Product updatedProduct = new Product();
+        int quantity = product.getQuantity();
+        if(productOpt.isPresent()){
+            updatedProduct = productOpt.get();
+            System.out.println(updatedProduct);
+            quantity+=updatedProduct.getQuantity();
+            updatedProduct.setQuantity(quantity);
+        }
+
+        return productRepository.save(updatedProduct);
     }
 
 
@@ -73,6 +87,7 @@ public class IProductServiceImpl implements IProductService{
             productRepository.save(product);
             if(count<3){
 
+                stockProducer.sendToQueue(productId, count);
             }
         }else{
             throw new ProductNotFound(productId);
@@ -85,11 +100,12 @@ public class IProductServiceImpl implements IProductService{
     public Product update(ProductDTO productDTO) {
         Product product = productRepository.getById(productDTO.getProductId());
         productDTO.setProductId(product.getProductId());
+        productDTO.setProductName(product.getProductName());
         productDTO.setOldPrice(product.getPrice());
         product.setPrice(productDTO.getNewPrice());
 
         ProductPriceChangeMessage productPriceChangeMessage = ProductPriceChangeMessage.builder().id(java.util.UUID.randomUUID().toString()).message(productDTO).build();
-        producer.sendToQueue(productPriceChangeMessage);
+        priceChangeProducer.sendToQueue(productPriceChangeMessage);
         System.out.println(productPriceChangeMessage.toString());
         return productRepository.save(product);
     }
